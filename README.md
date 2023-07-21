@@ -1,5 +1,5 @@
 # Voluntary-Motion
-fish_serial.py is a Python 3 code to display a voluntary motion paradigm. Uses image-files found in the zipped folder "images". Records force while subject presses on the foot pedal (built by Francesco Santini and Xeni Deligianni) and display the applied force overlaid on the predefined force surve. It needs pygamezero package. Before running the code, check COM port. To start, 
+fish_serial.py is a Python 3 code to display a voluntary motion paradigm. Uses image-files found in the zipped folder "images". Records force while subject presses on the foot pedal (built by Francesco Santini and Xeni Deligianni) and display the applied force overlaid on the predefined force surve in real time. It needs pygamezero package. Before running the code, check COM port. To start, 
 run fisch_serial.py in Python. Reading and logging of serial port starts with run => LogFile_data_time.
 After start: type amplitude of force that you expect or aim at.
 Press <- to pause fish and bubbles and logging of trigger.
