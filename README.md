@@ -9,7 +9,9 @@ Press t to send reset_tare signal to green box.
 Press m or p to change force amplitude.
 
 ## Releases 
+Version 0.1.0 Initial release: Code associated with "Cine phase contrast magnetic resonance imaging of calf muscle contraction in pediatric patients with cerebral palsy and healthy children: comparison of voluntary motion and electrically evoked motion" by Weidensteiner et al.
 
+@https://www.medrxiv.org/content/10.1101/2023.08.02.23293313v1
 
 ## 👨‍💻 Creator
 This repository is developed and maintained by the [**Basel Muscle MRI Group**](https://dbe.unibas.ch/en/research/imaging-modelling-diagnosis/basel-muscle-mri/).
