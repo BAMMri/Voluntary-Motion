@@ -13,7 +13,12 @@ from threading import Thread
 from datetime import datetime
 import time
 import sys
+import glob
+import math
+import random
 
+ser = None  # will stay None in simulation mode
+simulate_force = False
 
 def serial_ports():
     """ Lists serial port names
@@ -46,12 +51,13 @@ def serial_ports():
 
 ports = serial_ports()
 
-port=input("Type port [" + ", ".join(ports) + "]: ")
-#port = "COM4"  # at home
-#port = "COM3"  # at office
-#port = "/dev/ttyS0"    # Raspberry Pi 3
-ser = serial.Serial(port, baudrate = 9600, timeout = 0.5)
-ser.flushInput()
+#port=input("Type port [" + ", ".join(ports) + "]: ")
+choice = input("Type port [" + ", ".join(ports) + "] or 'sim' for simulation: ")
+if choice.strip().lower() == "sim":
+         simulate_force=True
+else:
+    ser = serial.Serial(choice, baudrate = 9600, timeout = 0.5)
+    ser.flushInput()
 
 sollwert=int(input("Expected force amplitude? "))  #sollwert=30 is top value from arduino, sollwert from force sensor is 10% of max. vol. force
 WIDTH=800
@@ -88,10 +94,20 @@ def create_bubble():                    #function to create initial bubble curve
     
 def worker():    #serial connection, reading from it as a thread
     global decoded_bytes
+    t0=time.time()
     while True:
-        data = ser.readline()
+        #simulate data mode
+        if simulate_force:
+            elapsedtime= time.time() -t0
+            decoded_bytes = abs(math.sin(elapsedtime)) * sollwert
+            time.sleep(0.05)
+            continue
+        
+        # real serial mode
+        
 ##        print(data)
         try:
+            data = ser.readline()
             decoded_bytes = float(data[7:len(data)-2].decode("utf-8"))
         
 ##            print(decoded_bytes)
@@ -121,24 +137,34 @@ def draw():
 
 
 def send_trigger():
-    ser.write(b'TRIG\n')     #trigger signal for green box, needs new line command
-##    beep = tone.create('A3', 0.1)
-##    beep.play()
+    global ser
+    if simulate_force or ser is None:
+        print("sim mode, no trigger send")
+    else:
+        try:
+            ser.write(b'TRIG\n')
+        except Exception as e:
+            print("Failed to send TRIG:", e)
+
+    # allways log trigger, sim or real 
     with open(logName, 'a') as File:    #write trig signal to log file
-            timestamp = time.time()
-            File.write(datetime.now().strftime('%d-%m-%Y-%H-%M-%S')+','+str(timestamp)+','+'Trig'+'\n')
+        timestamp = time.time()
+        File.write(datetime.now().strftime('%d-%m-%Y-%H-%M-%S')+','+str(timestamp)+','+'Trig'+'\n')
     return
 
 def resetTare():
-    global lastReset
+    global lastReset, ser
     if time.time() - lastReset <= 5: return
     lastReset = time.time()
-    ser.write(b'RESET\n')    #reset tare signal for green box, needs new line command
+    if simulate_force or ser is None:
+        print("sim mode, no reset")
+    else:    
+        ser.write(b'RESET\n')    #reset tare signal for green box, needs new line command
     return
 
 
 def update(dt):             #update every dt seconds, approx 1/60
-    global game_pause, score, bubble_list, ser, decoded_bytes, topforce, sollwert, FISHBASELINE
+    global game_pause, score, bubble_list, decoded_bytes, topforce, sollwert, FISHBASELINE, ser #ser
     if keyboard.right and game_pause==True:  #press -> to start
         game_pause=False
     if keyboard.left and game_pause==False:  #press <- to pause
